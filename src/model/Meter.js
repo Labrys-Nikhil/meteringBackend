@@ -38,7 +38,7 @@ const meterSchema = new mongoose.Schema(
       ref:"User",
       required:true
     },
-    assingneduserId: {
+    assingnedUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },

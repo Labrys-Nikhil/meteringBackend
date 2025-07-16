@@ -1,4 +1,5 @@
 const express = require('express');
+const meterController = require('../controller/meterController');
 const meterDataController = require('../controller/meterDataController');
 const router = express.Router();
 
@@ -6,10 +7,11 @@ const router = express.Router();
 router.post('/meter-data', meterDataController.saveMeterReading);
 
 //meter.
-router.get('/meters', meterDataController.getAllMeters);
-router.get('/meter/:id', meterDataController.getMeterById);
-router.post('/add-meter', meterDataController.addMeter);
-router.put('/update-meter/:id', meterDataController.updateMeter);
-router.delete('/delete-meter/:id', meterDataController.deleteMeter);
+router.get('/get-all-meter', meterController.getAllMeters);
+router.get('/:id', meterController.getMeterById);
+router.post('/create', meterController.addMeter);
+router.post('/assign-meter',meterController.assignMeter);
+router.put('/update/:id', meterController.updateMeter);
+router.delete('/delete/:id', meterController.deleteMeter);
 
 module.exports = router;

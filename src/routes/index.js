@@ -13,6 +13,6 @@ const allRoutes = {
 
 router.use('/user', allRoutes.user);
 router.use('/auth', allRoutes.auth);
-router.use('/meters', allRoutes.meter);
+router.use('/meter', allRoutes.meter);
 
 module.exports = router;
