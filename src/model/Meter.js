@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { boolean } = require("zod");
 
 const meterSchema = new mongoose.Schema(
   {
@@ -32,12 +33,19 @@ const meterSchema = new mongoose.Schema(
     },
 
     lastSeen: { type: Date },       // Optional
-
-    userId: {
+    adminId:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"User",
+      required:true
+    },
+    assingneduserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
     },
+    isAssigned:{
+      type:Boolean,
+      default:false
+    }
   },
   { timestamps: true }
 );

@@ -4,6 +4,9 @@ const bcrypt = require('bcrypt');
 require('dotenv').config();
 //validation
 const{userSchema} = require('../validator/userValidator');
+const { Transaction } = require('mongodb');
+const sendOtpSMS = require('../utils/sendOTPsms');
+const { date } = require('zod');
 
 const smartlynkRegistration = async (req,res) => {
   const { name, email } = req.body;
@@ -42,36 +45,49 @@ const smartlynkRegistration = async (req,res) => {
   return res.status(201).json({ message: "Admin created sucessfully", accessToken, refreshToken, newUser });
 }
 
-//register the USer for specific Admin
+//register the User for specific Admin
 const register = async (req, res) => {
   try {
- 
     const checkUserData = userSchema.parse(req.body);
 
-    //check if the user already exists
-    const exixtingUser = await User.findOne({ email: checkUserData.email });
-
-    if (exixtingUser) {
+    // Check if user already exists
+    const existingUser = await User.findOne({ email: checkUserData.email });
+    if (existingUser) {
       return res.status(400).json({ error: "User already exists" });
     }
+
+    // Generate OTP
+    const OneTimeOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
     const newUser = new User({
       name: checkUserData.name,
       email: checkUserData.email,
-      password: checkUserData.password,
+      password: checkUserData.password, // hash if not using pre-save hook
       role: checkUserData.role,
-      firstLogin:true
+      phoneNumber: checkUserData.phoneNumber,
+      firstLogin: true,
+      otp:OneTimeOTP,
+      adminId:checkUserData.adminId,
+      otpExpiresAt: Date.now() + 5 * 60 * 1000, // 5 minutes from now
     });
 
-    newUser.save();
+    await newUser.save();
 
-    //return success response
-    return res.status(201).json({ message: "User registered successfully",redirect:{url:'/reset-password'} });
+    // Send OTP via SMS
+    // const sendOtpToUser = await sendOtpSMS(newUser.phoneNumber, newUser.otp);
+
+    // if (!sendOtpToUser || sendOtpToUser.error) {
+    //   return res.status(500).json({ error: "Failed to send OTP SMS" });
+    // }
+    console.log("otp:",newUser.otp);
+
+    return res.status(201).json({ message: "User registered successfully. OTP sent." });
   } catch (error) {
-    console.error("Error during user registration:", error);
+    console.error(" Error during user registration:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-}
+};
+
 const login = async (req, res) => {
   try {
     // Validate the request body
@@ -117,7 +133,46 @@ const logout = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 }
+const otpVerification = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { otp } = req.body;
 
+    if (!otp || !userId) {
+      return res.status(400).json({ message: "OTP and userId are required" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (!user.otp || !user.otpExpiresAt) {
+      return res.status(400).json({ message: "OTP not found or already verified" });
+    }
+
+    if (user.otpExpiresAt < Date.now()) {
+      return res.status(400).json({ message: "OTP has expired" });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Invalid OTP" });
+    }
+
+    // OTP verified successfully
+    user.otp = null;
+    user.otpExpiresAt = null;
+    user.firstLogin = false;
+    await user.save();
+
+    return res.status(200).json({ message: "OTP verified successfully" });
+
+  } catch (error) {
+    console.error("OTP Verification Error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 const loginLogicHepler = async (user, password) => {
   // Compare the password with the hashed password
@@ -142,4 +197,4 @@ function generatePassword(length) {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()";
   return Array.from({ length }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
 }
-module.exports = { smartlynkRegistration, register, logout, login }
+module.exports = { smartlynkRegistration, register, logout, login,otpVerification }

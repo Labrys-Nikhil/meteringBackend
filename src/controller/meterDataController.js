@@ -14,7 +14,7 @@ const saveMeterReading = async (req, res) => {
         console.log("Validated reading data:", validatedReading);
         console.log("Validated reading data:", validatedReading.meter_serial_number.value, validatedReading.slave_id.value);
         // Step 2: Check if the meter is registered
-        const meter = await Meter.findOne({ meterSerialNumber: validatedReading.meter_serial_number.value , slaveId: validatedReading.slave_id.value });
+        const meter = await Meter.findOne({ meterSerialNumber: validatedReading.meter_serial_number.value, slaveId: validatedReading.slave_id.value });
         if (!meter) {
             return res.status(404).json({ error: "Please register the meter in the Metering solution first." });
         }
@@ -42,10 +42,10 @@ const saveMeterReading = async (req, res) => {
 const addMeter = async (req, res) => {
     try {
         // Validate the incoming data
-        const { type, name, meterSerialNumber, slaveId, status, userId } = req.body;
-        console.log("Received data for new meter:", type, name, meterSerialNumber, slaveId, status, userId);
+        const { type, name, meterSerialNumber, slaveId, status, adminId } = req.body;
+        console.log("Received data for new meter:", type, name, meterSerialNumber, slaveId, status, adminId);
 
-        if ( !name || !meterSerialNumber || !slaveId || !userId) {
+        if (!name || !meterSerialNumber || !slaveId || !adminId) {
             return res.status(400).json({ error: "All fields are required." });
         }
 
@@ -68,8 +68,8 @@ const addMeter = async (req, res) => {
         }
 
         //check if the userId exists or not
-        const userExists = await User.findById(validatedMeterData.userId);
-        if (!userExists) {
+        const adminExists = await User.findById(validatedMeterData.adminId);
+        if (!adminExists) {
             return res.status(404).json({ error: "User not found." });
         }
 
@@ -83,7 +83,7 @@ const addMeter = async (req, res) => {
             slaveId: validatedMeterData.slaveId,
             status: validatedMeterData.status || "offline",
             lastSeen: validatedMeterData.lastSeen || new Date(),
-            userId: validatedMeterData.userId,
+            adminId: validatedMeterData.adminId,
         });
 
         // Save the new meter to the database
@@ -95,6 +95,33 @@ const addMeter = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 }
+const assignMeter = async (req, res) => {
+  try {
+    const { userId, meterId } = req.body;
+
+    // Check if the meter exists
+    const meter = await Meter.findOne({ meterId });
+
+    if (!meter) {
+      return res.status(404).json({ message: "Meter not found" });
+    }
+
+    // Check if it's already assigned
+    if (meter.isAssigned === true) {
+      return res.status(400).json({ message: "Meter is already assigned" });
+    }
+
+    meter.userId = userId;
+    meter.isAssigned = true;
+
+    await meter.save();
+
+    return res.status(201).json({ message: "Meter assigned successfully" });
+  } catch (err) {
+    console.error(" Error assigning meter:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
 
 const updateMeter = async (req, res) => {
     try {
@@ -149,9 +176,9 @@ const deleteMeter = async (req, res) => {
     }
 }
 const getAllMeters = async (req, res) => {
-    try {   
+    try {
         // Fetch all meters from the database
-        const meters = await Meter.find().populate('userData', 'name email');
+        const meters = await Meter.find().populate('userId', 'name email');
 
         if (meters.length === 0) {
             return res.status(404).json({ message: "No meters found." });
@@ -159,28 +186,28 @@ const getAllMeters = async (req, res) => {
 
         return res.status(200).json({ data: meters });
 
-    }catch{
+    } catch(error){
         console.error("Error deleting meter:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
-}    
+}
 
 const getMeterById = async (req, res) => {
     try {
         const { id } = req.params;
 
         // Check if the meter exists
-        const meter = await Meter.findById(id).populate('userData', 'name email');
+        const meter = await Meter.findById(id).populate('userId', 'name email');
         if (!meter) {
             return res.status(404).json({ error: "Meter not found." });
         }
 
         return res.status(200).json({ data: meter });
-    }catch (error) {
+    } catch (error) {
         console.error("Error fetching meter by ID:", error);
         return res.status(500).json({ error: "Internal server error" });
     }
 };
 
 
-module.exports = { saveMeterReading, addMeter,updateMeter,deleteMeter,getAllMeters,getMeterById };
+module.exports = { saveMeterReading, addMeter, updateMeter, deleteMeter, getAllMeters, getMeterById, assignMeter };

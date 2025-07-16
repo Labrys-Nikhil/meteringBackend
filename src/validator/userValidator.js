@@ -16,7 +16,7 @@ const userSchema = z.object({
     .max(10, "Phone number must be no more than 10 digits")
     .regex(/^\d+$/, "Phone number must contain only digits")
     .optional(),
-  adminId: z.string()
+  adminId: z.string().regex(/^[a-f\d]{24}$/i, "Invalid userId format (must be ObjectId)"),
 }).check((data) => {
   const issues = [];
 
