@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const { connectDB } = require('./src/config/dbConfig');
 const mainRoutes = require('./src/routes/index');
+const { scheduleMidnightJob } = require('./src/jobs/scheduleMidnightJob');
 
 
 const app = express();
@@ -13,7 +14,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 connectDB();
-
+scheduleMidnightJob();
 
 app.use('/api/v1', mainRoutes);
 

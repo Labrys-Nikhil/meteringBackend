@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { boolean } = require("zod");
+const DailyMeterSummary = require("./DailyMeterSummary");
 
 const meterSchema = new mongoose.Schema(
   {
@@ -45,7 +45,11 @@ const meterSchema = new mongoose.Schema(
     isAssigned:{
       type:Boolean,
       default:false
-    }
+    },
+    userAssignedTimestamp:{
+      type:Date,
+      default:''
+    },
   },
   { timestamps: true }
 );

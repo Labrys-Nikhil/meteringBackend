@@ -76,7 +76,10 @@ const assignMeter = async (req, res) => {
       return res.status(400).json({ message: "Meter is already assigned" });
     }
 
-    meter.userId = userId;
+    meter.assingnedUserId = userId;
+    meter.userAssignedTimestamp = new Date();
+    console.log("meter data",meter);
+   
     meter.isAssigned = true;
 
     await meter.save();
@@ -173,5 +176,7 @@ const getMeterById = async (req, res) => {
         return res.status(500).json({ error: "Internal server error" });
     }
 };
+
+
 
 module.exports = {getAllMeters,getMeterById,updateMeter,addMeter,assignMeter,deleteMeter}

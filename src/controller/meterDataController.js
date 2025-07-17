@@ -3,7 +3,7 @@ const User = require('../model/User');
 
 const MeterDecodedData = require('../model/MeterData');
 const { meterReadingValidator } = require('../validator/meterDataValidator');
-
+const meterDataService = require('../service/meterDataService');
 
 const saveMeterReading = async (req, res) => {
     try {
@@ -38,5 +38,21 @@ const saveMeterReading = async (req, res) => {
     }
 };
 
+const getAllMetersDataByUserID = async (req,res)=> {
+    try{
+        const {id} = req.params;
+        const user = await User.findById(id);
 
-module.exports = { saveMeterReading };
+        if(!user){
+            return req.status(404).json({message:"user not found"});
+        }
+
+        const response = await meterDataService.getMeterDataByUserId(id,user);
+
+    }catch(error){
+        return res.status(500).json({messsage:"server error", error:`${error}`})
+    }
+}
+
+
+module.exports = { saveMeterReading,getAllMetersDataByUserID };
