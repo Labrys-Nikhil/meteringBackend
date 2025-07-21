@@ -10,7 +10,7 @@ router.post('/otp-verification/:userId',authController.otpVerification);
 router.post('/register-admin-smartlynk',authController.smartlynkRegistration);
 
 //common routes
-router.post('/user-login', authController.login);
-router.post('/user-logout', authController.logout);
+router.post('/login', authController.login);
+router.post('/logout', authController.logout);
 
 module.exports = router;

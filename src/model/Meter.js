@@ -32,24 +32,29 @@ const meterSchema = new mongoose.Schema(
       default: 'offline',
     },
 
-    lastSeen: { type: Date },       // Optional
+    lastSeen: { type: Date }, 
+
     adminId:{
       type:mongoose.Schema.Types.ObjectId,
       ref:"User",
       required:true
     },
+
     assingnedUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+
     isAssigned:{
       type:Boolean,
       default:false
     },
+
     userAssignedTimestamp:{
       type:Date,
       default:''
     },
+    
   },
   { timestamps: true }
 );

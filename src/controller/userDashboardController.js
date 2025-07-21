@@ -1,20 +1,28 @@
 const {getDashboardSummary,getChartData,getLatestReading } = require('../service/userDashboardService');
-
+const Meter = require('../model/Meter');
 
 const init =  async (req, res) => {
-  const { meterId, userId, range = "7d" } = req.query;
+  const { id } = req.params;
+  const { range = "7" } = req.query;
 
   try {
-    const [summary, chartData, latestReading] = await Promise.all([
-      getDashboardSummary(meterId, userId, range),
-      getChartData(meterId, userId, range),
-      getLatestReading(meterId, userId),
+    //find the meter id.
+    const meter = await Meter.findOne({assingnedUserId:id});
+
+    console.log('meterDAta inside the init---------->',meter);
+    const meterId = meter._id;
+
+    if(!meterId || !id || !range ){
+        return res.status(404).json({message:"All data is required!"});
+    }
+    
+    //in this we will call the all the api that we need for the Dashboard.
+    const [summary] = await Promise.all([
+      getDashboardSummary(meterId, id, range),
     ]);
 
     return res.json({
-      summary,
-      chartData,//30 days data
-      latestReading,
+        summary
     });
   } catch (error) {
     console.error("/api/dashboard/init error:", error);
@@ -23,42 +31,30 @@ const init =  async (req, res) => {
 };
 
 
-router.get("/chart", async (req, res) => {
-  const { meterId, userId, range = "7d" } = req.query;
+const chart = async (req, res) => {
+  const { meterId, id, range = "7d" } = req.query;
 
   try {
-    const chartData = await getChartData(meterId, userId, range);
+    const chartData = await getChartData(meterId, id, range);
     return res.json(chartData);
   } catch (error) {
     console.error("/api/dashboard/chart error:", error);
     return res.status(500).json({ message: "Error fetching chart data" });
   }
-});
+};
 
 
-router.get("/summary", async (req, res) => {
-  const { meterId, userId, range = "7d" } = req.query;
+const summary = async (req, res) => {
+  const { meterId, id, range = "7d" } = req.query;
 
   try {
-    const summary = await getDashboardSummary(meterId, userId, range);
+    const summary = await getDashboardSummary(meterId, id, range);
     return res.json(summary);
   } catch (error) {
     console.error("/api/dashboard/summary error:", error);
     return res.status(500).json({ message: "Error fetching summary" });
   }
-});
+};
 
-//get the alets
-router.get("/alerts", async (req, res) => {
-  const { meterId, userId } = req.query;
 
-  try {
-    const alerts = await getAlerts(meterId, userId);
-    return res.json(alerts);
-  } catch (error) {
-    console.error("/api/dashboard/alerts error:", error);
-    return res.status(500).json({ message: "Error fetching alerts" });
-  }
-});
-
-module.exports = {init,}
+module.exports = {init,summary,chart}

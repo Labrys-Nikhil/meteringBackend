@@ -1,7 +1,6 @@
 const Meter = require("../model/Meter");
-const DailySummary = require("../model/DailySummary");
-const MeterData = require("../model/MeterData");
 const DailyMeterSummary = require("../model/DailyMeterSummary");
+const MeterData = require("../model/MeterData");
 
 const dailyDataCollectionPerMeter = async () => {
     try {
@@ -45,7 +44,7 @@ const calculateData = async (meter) => {
         readingStartTime = startOfYesterday; // use full day
     }
 
-    const readings = await MeterReading.find({
+    const readings = await MeterData.find({
         meterId,
         timestamp: {
             $gte: readingStartTime,

@@ -113,10 +113,8 @@ const login = async (req, res) => {
     }
     return res.status(loginResponse.status).json({
       message: loginResponse.message,
-      userData: loginResponse.userData,
+      data:loginResponse.user
     });
-
-
 
   } catch (error) {
     console.error("Error during user login:", error);
@@ -125,7 +123,7 @@ const login = async (req, res) => {
 }
 const logout = async (req, res) => {
   try {
-
+    
 
     // Return a success response
     return res.status(200).json({ message: "Logout successful" });
