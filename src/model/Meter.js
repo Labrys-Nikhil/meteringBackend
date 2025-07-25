@@ -54,7 +54,10 @@ const meterSchema = new mongoose.Schema(
       type:Date,
       default:''
     },
-    
+    deviceId:{
+      type:String,
+      required:true
+    }
   },
   { timestamps: true }
 );

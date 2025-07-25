@@ -46,6 +46,9 @@ const meterValidator = z.object({
   adminId: z
     .string()
     .regex(/^[a-f\d]{24}$/i, "Invalid userId format (must be ObjectId)"),
+  deviceId: z
+     .string()
+     
 });
 
 module.exports = { meterValidator };

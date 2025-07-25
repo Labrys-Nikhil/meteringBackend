@@ -7,8 +7,8 @@ const generateDevEUI = require('../helper/generateDevEUI');
 const addMeter = async (req, res) => {
     try {
         // Validate the incoming data
-        const { type, name, meterSerialNumber, slaveId, status, adminId } = req.body;
-        console.log("Received data for new meter:", type, name, meterSerialNumber, slaveId, status, adminId);
+        const { type, name, meterSerialNumber, slaveId, status, adminId,deviceId } = req.body;
+        console.log("Received data for new meter:", {type, name, meterSerialNumber, slaveId, status, adminId,deviceId});
 
         if (!name || !meterSerialNumber || !slaveId || !adminId) {
             return res.status(400).json({ error: "All fields are required." });
@@ -35,7 +35,7 @@ const addMeter = async (req, res) => {
         //check if the userId exists or not
         const adminExists = await User.findById(validatedMeterData.adminId);
         if (!adminExists) {
-            return res.status(404).json({ error: "User not found." });
+            return res.status(404).json({ error: "admin not found." });
         }
 
         // Create a new meter instance
@@ -49,6 +49,7 @@ const addMeter = async (req, res) => {
             status: validatedMeterData.status || "offline",
             lastSeen: validatedMeterData.lastSeen || new Date(),
             adminId: validatedMeterData.adminId,
+            deviceId:validatedMeterData.deviceId,
         });
 
         // Save the new meter to the database
@@ -65,7 +66,7 @@ const assignMeter = async (req, res) => {
     const { userId, meterId } = req.body;
 
     // Check if the meter exists
-    const meter = await Meter.findOne({ meterId });
+    const meter = await Meter.findOne({ deviceId:meterId });
 
     if (!meter) {
       return res.status(404).json({ message: "Meter not found" });

@@ -1,5 +1,6 @@
 const {getDashboardSummary,getChartData,getLatestReading } = require('../service/userDashboardService');
 const Meter = require('../model/Meter');
+const User = require('../model/User');
 
 const init =  async (req, res) => {
   const { id } = req.params;
@@ -55,6 +56,16 @@ const summary = async (req, res) => {
     return res.status(500).json({ message: "Error fetching summary" });
   }
 };
+const profile = async(req,res)=>{
+  try {
+    const user = await User.findById(req.user.id).select('id name email role');
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
+    res.json(user);
+  } catch (err) {
+    console.error('Error in /me:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
 
-module.exports = {init,summary,chart}
+module.exports = {init,summary,chart,profile}

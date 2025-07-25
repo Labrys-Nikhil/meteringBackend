@@ -1,22 +1,26 @@
 const express = require('express');
 const meterController = require('../controller/meterController');
 const meterDataController = require('../controller/meterDataController');
+const { authenticateToken } = require('../middleware/authenticateToken');
 const router = express.Router();
 
 //meterDataController
 //get the meter data from the smartlynk-platform
 router.post('/meter-data', meterDataController.saveMeterReading);
-router.get('/most-recent-data/:id',meterDataController.getAllMetersDataByUserID);
+router.get('/get-all-meter-from-iot',meterDataController.getMeterDatafromSmartlynk);
+
+
+router.get('/most-recent-data/:id',authenticateToken,meterDataController.getAllMetersDataByUserID);
 
 
 //meterController
 //meter spcific apis
-router.get('/get-all-meter', meterController.getAllMeters);
-router.get('/:id', meterController.getMeterById);
-router.post('/create', meterController.addMeter);
-router.post('/assign-meter',meterController.assignMeter);
-router.put('/update/:id', meterController.updateMeter);
-router.delete('/delete/:id', meterController.deleteMeter);
+router.get('/get-all-meter',authenticateToken, meterController.getAllMeters);
+router.get('/:id',authenticateToken, meterController.getMeterById);
+router.post('/create',authenticateToken, meterController.addMeter);
+router.post('/assign-meter',authenticateToken,meterController.assignMeter);
+router.put('/update/:id',authenticateToken, meterController.updateMeter);
+router.delete('/delete/:id',authenticateToken, meterController.deleteMeter);
 
 
 

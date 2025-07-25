@@ -1,10 +1,12 @@
 const Meter = require('../model/Meter');
 const User = require('../model/User');
-
 const MeterDecodedData = require('../model/MeterData');
 const { meterReadingValidator } = require('../validator/meterDataValidator');
 const meterDataService = require('../service/meterDataService');
+const axios = require('axios'); 
+const generateTokenFromIOT = require('../utils/jwtGeneratorIOT');
 
+//smartlynk-apis
 const saveMeterReading = async (req, res) => {
     try {
         // Step 1: Validate incoming data
@@ -37,7 +39,40 @@ const saveMeterReading = async (req, res) => {
         });
     }
 };
+const getMeterDatafromSmartlynk = async (req,res) => {
+  try {
+    const superAdmin = await User.findById(process.env.SUPER_ADMIN_ID);
+    console.log("superAdmin",superAdmin);
+    console.log("email",superAdmin.email);
 
+    if (!superAdmin || !superAdmin.email) {
+      console.error("Super admin not found or missing email.");
+      return null;
+    }
+
+    const jwtToken = generateTokenFromIOT(superAdmin.email);
+    console.log(jwtToken);
+
+    const response = await axios.get(
+      `${process.env.SMARTLYNK_BASE_URL}/get-meterData`,
+      {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      }
+    );
+    
+    if(response.status === 200){
+        return res.status(200).json({message:"success",data:response.data.data});
+    }
+    return res.status(500).json({message:"server error"});
+  } catch (error) {
+    console.error("Failed to fetch SmartLynk meter data:", error.message);
+    throw error;
+  }
+};
+
+//iot apis
 const getAllMetersDataByUserID = async (req,res)=> {
     try{
         const {id} = req.params;
@@ -55,4 +90,4 @@ const getAllMetersDataByUserID = async (req,res)=> {
 }
 
 
-module.exports = { saveMeterReading,getAllMetersDataByUserID };
+module.exports = { saveMeterReading,getAllMetersDataByUserID,getMeterDatafromSmartlynk };
