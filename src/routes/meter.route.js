@@ -8,6 +8,7 @@ const router = express.Router();
 //get the meter data from the smartlynk-platform
 router.post('/meter-data', meterDataController.saveMeterReading);
 router.get('/get-all-meter-from-iot',meterDataController.getMeterDatafromSmartlynk);
+//router.post('/send-downlink-command-iot',meterDataController.sendDownlink);
 
 
 router.get('/most-recent-data/:id',authenticateToken,meterDataController.getAllMetersDataByUserID);

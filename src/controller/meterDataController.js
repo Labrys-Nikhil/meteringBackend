@@ -89,5 +89,23 @@ const getAllMetersDataByUserID = async (req,res)=> {
     }
 }
 
+const sendDownlink = async(req,res)=>{
+  try {
+    const data = res.body;
+    const response = await axios.get(
+      `${process.env.SMARTLYNK_BASE_URL}/custom-meter-commands`,
+      {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+        },
+      }
+    );
+    
+  } catch (error) {
+    console.error("Failed to send downlink to SmartLynk:", error.message);
+    throw error;
+  }
+}
 
-module.exports = { saveMeterReading,getAllMetersDataByUserID,getMeterDatafromSmartlynk };
+
+module.exports = { saveMeterReading,getAllMetersDataByUserID,getMeterDatafromSmartlynk,sendDownlink };
