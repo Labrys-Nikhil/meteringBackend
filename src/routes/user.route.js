@@ -4,6 +4,7 @@ const userDashboardController = require('../controller/userDashboardController')
 const userController = require('../controller/userController');
 const {authenticateToken} = require('../middleware/authenticateToken');
 const adminController = require("../controller/adminDashboardController");
+const paymentController = require('../controller/paymentController');
 
 
 //first time data loader userDashbaord.
@@ -21,11 +22,14 @@ router.get("/get-user/:id", userController.getUserById);
 router.get("/users", userController.getUsers);
 
 //adminDahboardRoute
-router.get("/recent-data/:adminId", adminController.getLatestDashboardStat);
-router.get("/get-admin-daily-consumption/:adminId", adminController.fetchAdminDailyConsumption);
-router.get("/get-userdata-by-admin/:adminId", adminController.getUserDataByAdminId);
-router.get("/get-meter-by-admin/:adminId", adminController.getMeterDataByAdminId);
-router.post("/add-admin-stats", adminController.addAdminDashboardStats);
+router.get("/adminDashboard/recent-data/:adminId", adminController.getLatestDashboardStat);
+router.get("/adminDashboard/get-admin-daily-consumption/:adminId", adminController.fetchAdminDailyConsumption);
+router.get("/adminDashboard/get-userdata-by-admin/:adminId", adminController.getUserDataByAdminId);
+router.get("/adminDashboard/get-meter-by-admin/:adminId", adminController.getMeterDataByAdminId);
+router.post("/adminDashboard/add-admin-stats", adminController.addAdminDashboardStats);
+
+//payment
+router.get("/get-payment-history-by/:meterId", paymentController.getPaymentsForMeterId)
 
 
 

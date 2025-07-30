@@ -8,7 +8,8 @@ const  meterRoutes  = require('./meter.route');
 const allRoutes = {
     user: userRoutes,
     auth: authRoutes,
-    meter: meterRoutes
+    meter: meterRoutes,
+    
 }
 
 router.use('/user', allRoutes.user);

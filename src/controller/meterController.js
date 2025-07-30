@@ -178,6 +178,79 @@ const getMeterById = async (req, res) => {
     }
 };
 
+const getMeterByMeterId = async (req, res) => {
+  try {
+    const { meterId } = req.params;
+    const { startTime, endTime } = req.query;
+
+    // Step 1: Find the meter by meterId string
+    const meter = await Meter.findOne({ meterId });
+
+    if (!meter) {
+      return res.status(404).json({ message: "Meter not found" });
+    }
+
+    // Step 2: Build date filter (on "date" field)
+    const dateFilter = {};
+    if (startTime) dateFilter.$gte = new Date(startTime);
+    if (endTime) {
+      const end = new Date(endTime);
+      end.setHours(23, 59, 59, 999); // Include full end day
+      dateFilter.$lte = end;
+    }
+
+    const query = {
+      meterId: meter._id,
+      ...(startTime || endTime ? { date: dateFilter } : {})
+    };
+
+    // Step 3: Find summaries with optional date filtering
+    const summaries = await DailyMeterData.find(query).sort({ date: -1 });
+
+    res.status(200).json(summaries);
+  } catch (error) {
+    console.error("Error fetching meter summary data:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
 
 
-module.exports = {getAllMeters,getMeterById,updateMeter,addMeter,assignMeter,deleteMeter}
+const getAllMetersWithPaymentData = async (req, res) => {
+  try {
+    // Fetch all meters
+    const meters = await Meter.find().populate('assingnedUserId', 'name email');
+
+    if (meters.length === 0) {
+      return res.status(404).json({ message: "No meters found." });
+    }
+
+    // For each meter, get the latest decoded data (by createdAt descending)
+    const metersWithBalance = await Promise.all(
+      meters.map(async (meter) => {
+        const latestReading = await MeterDecodedData.findOne({ meterId: meter._id })
+          .sort({ createdAt: -1 });
+
+        const balance = latestReading?.balance_amount?.value ?? null;
+
+         const latestPayment = await Payment.findOne({
+          meterId: meter._id,
+          status: "success",
+        })
+          .sort({ createdAt: -1 });
+
+        return {
+          ...meter.toObject(),
+          balanceAmount: balance,
+          latestPayment:latestPayment
+        };
+      })
+    );
+
+    return res.status(200).json({ data: metersWithBalance });
+  } catch (error) {
+    console.error("Error fetching meters:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+module.exports = {getAllMeters,getMeterById,updateMeter,addMeter,assignMeter,deleteMeter,getAllMetersWithPaymentData,getMeterByMeterId}

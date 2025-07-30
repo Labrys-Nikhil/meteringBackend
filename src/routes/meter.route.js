@@ -24,5 +24,8 @@ router.put('/update/:id',authenticateToken, meterController.updateMeter);
 router.delete('/delete/:id',authenticateToken, meterController.deleteMeter);
 
 
+router.get('/by-meterId/:meterId',authenticateToken, meterController.getMeterByMeterId);
+router.get('/get-all-meter-with-payment',authenticateToken, meterController.getAllMetersWithPaymentData);
+
 
 module.exports = router;
