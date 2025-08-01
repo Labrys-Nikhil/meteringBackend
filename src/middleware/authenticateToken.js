@@ -7,7 +7,9 @@ function authenticateToken(req, res, next) {
   if (!token) return res.status(401).json({ message: 'Access denied' });
 
   try {
+    console.log('check inside the authmiddleware')
     const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
+    console.log(decoded);
     req.user = decoded;
     next();
   } catch (err) {

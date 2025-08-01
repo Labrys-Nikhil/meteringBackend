@@ -16,16 +16,15 @@ router.get('/most-recent-data/:id',authenticateToken,meterDataController.getAllM
 
 //meterController
 //meter spcific apis
-router.get('/get-all-meter',authenticateToken, meterController.getAllMeters);
-router.get('/:id',authenticateToken, meterController.getMeterById);
+
+router.get('/get-all-meter-with-payment',authenticateToken, meterController.getAllMetersWithPaymentData);
 router.post('/create',authenticateToken, meterController.addMeter);
 router.post('/assign-meter',authenticateToken,meterController.assignMeter);
+router.get('/get-all-meter',authenticateToken, meterController.getAllMeters);
+router.get('/:id',authenticateToken, meterController.getMeterById);
 router.put('/update/:id',authenticateToken, meterController.updateMeter);
 router.delete('/delete/:id',authenticateToken, meterController.deleteMeter);
-
-
 router.get('/by-meterId/:meterId',authenticateToken, meterController.getMeterByMeterId);
-router.get('/get-all-meter-with-payment',authenticateToken, meterController.getAllMetersWithPaymentData);
 
 
 module.exports = router;

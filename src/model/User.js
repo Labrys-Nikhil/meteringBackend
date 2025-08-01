@@ -81,7 +81,27 @@ const userSchema = new mongoose.Schema(
     loginCount: { type: Number, default: 0 },
     status: { type: String },
     superAdminId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-
+    bio: {
+      type: String,
+      default: ""
+    },
+    avatar: {
+      type: String,  // You can store image URL or file path here
+      default: ""
+    },
+    dateOfBirth: {
+      type: Date,
+      default: null
+    },
+    website: {
+      type: String,
+      default: ""
+    },
+    socialLinks: {
+      linkedin: { type: String, default: '' },
+      twitter: { type: String, default: '' },
+      github: { type: String, default: '' }
+    }
 
   },
   { timestamps: true }

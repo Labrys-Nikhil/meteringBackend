@@ -4,7 +4,7 @@ const User = require("../model/User");
 const Meter = require("../model/Meter");
 const MeterDecodedData = require("../model/MeterData");
 const AdminDashboard = require("../model/AdminDashboard");
-// const DailyMeterData = require("../model/DailyMeterData");
+const DailyMeterData = require("../model/DailyMeterSummary")
 const Payment = require("../model/Payment");
 
 

@@ -103,7 +103,7 @@ const login = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    if (!["admin", "user"].includes(user.role)) {
+    if (!["admin", "user","superAdmin"].includes(user.role)) {
       return res.status(403).json({ error: "Access denied: Invalid role" });
     }
 

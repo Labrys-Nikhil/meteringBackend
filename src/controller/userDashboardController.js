@@ -58,7 +58,7 @@ const summary = async (req, res) => {
 };
 const profile = async(req,res)=>{
   try {
-    const user = await User.findById(req.user.id).select('id name email role');
+    const user = await User.findById(req.user.id).select('-password -refreshToken');
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     res.json(user);
@@ -68,4 +68,27 @@ const profile = async(req,res)=>{
   }
 }
 
-module.exports = {init,summary,chart,profile}
+const updateProfile = async (req, res) => {
+  try {
+    const { name, email, phone, bio, dateOfBirth, website, socialLinks } = req.body;
+    const userId = req.user.id;
+
+    // Build the data object from the destructured fields
+    const data = {name, email, phone, bio, dateOfBirth, website, socialLinks };
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: data },
+      { new: true }
+    ).select('-password -refreshToken');
+    console.log("updatedUser------------------------------------>",updatedUser);
+
+  
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error in updating profile:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+module.exports = {init,summary,chart,profile,updateProfile}

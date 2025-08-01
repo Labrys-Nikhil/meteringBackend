@@ -10,6 +10,7 @@ const paymentController = require('../controller/paymentController');
 //first time data loader userDashbaord.
 router.get('/dashboard/init/:id',authenticateToken,userDashboardController.init);
 router.get('/profile',authenticateToken,userDashboardController.profile);
+router.put('/update-profile',authenticateToken,userDashboardController.updateProfile)
 
 //individual api for Userdashboard.
 router.get('/chart',authenticateToken,userDashboardController.chart);

@@ -1,6 +1,8 @@
 const Meter = require('../model/Meter');
 const User = require('../model/User');
-
+const MeterDecodedData = require('../model/MeterData');
+const Payment = require('../model/Payment');
+const DailyMeterData = require('../model/DailyMeterSummary');
 const { meterValidator } = require('../validator/meterValidator');
 const generateDevEUI = require('../helper/generateDevEUI');
 
@@ -216,9 +218,12 @@ const getMeterByMeterId = async (req, res) => {
 
 
 const getAllMetersWithPaymentData = async (req, res) => {
+  const {id} = req.user;
+  console.log('---->',id);
   try {
     // Fetch all meters
-    const meters = await Meter.find().populate('assingnedUserId', 'name email');
+    const meters = await Meter.find();
+    console.log("---------->",meters);
 
     if (meters.length === 0) {
       return res.status(404).json({ message: "No meters found." });
