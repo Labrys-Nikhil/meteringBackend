@@ -79,7 +79,7 @@ const assignMeter = async (req, res) => {
       return res.status(400).json({ message: "Meter is already assigned" });
     }
 
-    meter.assingnedUserId = userId;
+    meter.assignedUserId = userId;
     meter.userAssignedTimestamp = new Date();
     console.log("meter data",meter);
    
@@ -149,7 +149,7 @@ const deleteMeter = async (req, res) => {
 const getAllMeters = async (req, res) => {
     try {
         // Fetch all meters from the database
-        const meters = await Meter.find().populate('assingnedUserId', 'name email');
+        const meters = await Meter.find().populate('assignedUserId', 'name email');
 
         if (meters.length === 0) {
             return res.status(404).json({ message: "No meters found." });
@@ -168,7 +168,7 @@ const getMeterById = async (req, res) => {
         const { id } = req.params;
 
         // Check if the meter exists
-        const meter = await Meter.findById(id).populate('assingnedUserId', 'name email');
+        const meter = await Meter.findById(id).populate('assignedUserId', 'name email');
         if (!meter) {
             return res.status(404).json({ error: "Meter not found." });
         }

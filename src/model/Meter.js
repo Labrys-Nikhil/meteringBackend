@@ -1,6 +1,15 @@
 const mongoose = require("mongoose");
 const DailyMeterSummary = require("./DailyMeterSummary");
 
+const ActionHistorySchema = new mongoose.Schema({
+  status: {
+    type: String,
+    enum: ['pending', 'success', 'failed'],
+    required:true
+  },
+  action: { type: String, required: true },
+  timestamp: { type: Date, default: Date.now },
+});
 const meterSchema = new mongoose.Schema(
   {
     meterId: {
@@ -40,7 +49,7 @@ const meterSchema = new mongoose.Schema(
       required:true
     },
 
-    assingnedUserId: {
+    assignedUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
@@ -57,7 +66,8 @@ const meterSchema = new mongoose.Schema(
     deviceId:{
       type:String,
       required:true
-    }
+    },
+    actionHistory: [ActionHistorySchema],
   },
   { timestamps: true }
 );

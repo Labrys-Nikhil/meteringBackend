@@ -2,7 +2,6 @@
 const mongoose = require("mongoose");
 const User = require("../model/User");
 const Meter = require("../model/Meter");
-const MeterDecodedData = require("../model/MeterData");
 const AdminDashboard = require("../model/AdminDashboard");
 const DailyMeterData = require("../model/DailyMeterSummary")
 const Payment = require("../model/Payment");
@@ -142,13 +141,13 @@ const getUserDataByAdminId = async (adminId, startDate, endDate) => {
         users.map(async (user) => {
             const meters = await Meter.find({
                 adminId: adminId,
-                assingnedUserId: user._id,
+                assignedUserId: user._id,
                 isAssigned: true,
             })
 
             //       const assignedMeters = await Meter.find({
             //   adminId: adminId,
-            //   assingnedUserId: user._id ,
+            //   assignedUserId: user._id ,
             //       isAssigned: true,   // not "assignedUserId"
             // });
             console.log("====meters=====", meters)
@@ -217,7 +216,7 @@ const addAdminDashboardStat = async () => {
     for (const adminId of adminIds) {
         const totalUsers = await User.countDocuments({ adminId, role: "user" });
 
-        const assignedUsers = await Meter.distinct("assingnedUserId", {
+        const assignedUsers = await Meter.distinct("assignedUserId", {
             adminId,
             isAssigned: true,
         });

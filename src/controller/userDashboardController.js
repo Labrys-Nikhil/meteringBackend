@@ -1,29 +1,37 @@
-const {getDashboardSummary,getChartData,getLatestReading } = require('../service/userDashboardService');
+const { getDashboardSummary, getChartData, getLatestReading } = require('../service/userDashboardService');
 const Meter = require('../model/Meter');
 const User = require('../model/User');
 
-const init =  async (req, res) => {
-  const { id } = req.params;
+const init = async (req, res) => {
+  const { id } = req.user;
   const { range = "7" } = req.query;
-
+  //find the meter id.
+  // console.log({
+  //   id, range
+  // })
   try {
-    //find the meter id.
-    const meter = await Meter.findOne({assingnedUserId:id});
 
-    console.log('meterDAta inside the init---------->',meter);
+    const meter = await Meter.findOne({ assignedUserId: id });
+
+    console.log('meterDAta inside the init---------->', meter);
     const meterId = meter._id;
-
-    if(!meterId || !id || !range ){
-        return res.status(404).json({message:"All data is required!"});
-    }
     
+    // console.log('check for the data------>',{
+    //   meterId: meterId,
+    //   ID: id,
+    //   range: range
+    // })
+    if (!meterId || !id || !range) {
+      return res.status(404).json({ message: "All data is required!" });
+    }
+
     //in this we will call the all the api that we need for the Dashboard.
     const [summary] = await Promise.all([
       getDashboardSummary(meterId, id, range),
     ]);
 
     return res.json({
-        summary
+      summary
     });
   } catch (error) {
     console.error("/api/dashboard/init error:", error);
@@ -56,7 +64,7 @@ const summary = async (req, res) => {
     return res.status(500).json({ message: "Error fetching summary" });
   }
 };
-const profile = async(req,res)=>{
+const profile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password -refreshToken');
     if (!user) return res.status(404).json({ message: 'User not found' });
@@ -74,15 +82,15 @@ const updateProfile = async (req, res) => {
     const userId = req.user.id;
 
     // Build the data object from the destructured fields
-    const data = {name, email, phone, bio, dateOfBirth, website, socialLinks };
+    const data = { name, email, phone, bio, dateOfBirth, website, socialLinks };
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $set: data },
       { new: true }
     ).select('-password -refreshToken');
-    console.log("updatedUser------------------------------------>",updatedUser);
+    console.log("updatedUser------------------------------------>", updatedUser);
 
-  
+
 
     res.json(updatedUser);
   } catch (error) {
@@ -91,4 +99,4 @@ const updateProfile = async (req, res) => {
   }
 };
 
-module.exports = {init,summary,chart,profile,updateProfile}
+module.exports = { init, summary, chart, profile, updateProfile }
