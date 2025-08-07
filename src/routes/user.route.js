@@ -31,6 +31,7 @@ router.post("/adminDashboard/add-admin-stats", adminController.addAdminDashboard
 
 //payment
 router.get("/get-payment-history-by/:meterId", paymentController.getPaymentsForMeterId)
+router.get("/negative-payments/:adminId", paymentController.getNegativePayments)
 
 
 
