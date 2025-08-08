@@ -157,15 +157,15 @@ const calculateData = async (meter) => {
   const totalKWh = totalEB + totalDG;
   const totalDeduction =  Number(firstReading.balance_amount.value) - Number(lastReading.balance_amount.value);
 
-  // await DailyMeterSummary.create({
-  //   meterId,
-  //   userId: assignedUserId,
-  //   date: startOfYesterday,
-  //   totalKWh,
-  //   totalDeduction,
-  //   totalEG: totalEB,
-  //   totalDG
-  // });
+  await DailyMeterSummary.create({
+    meterId,
+    userId: assignedUserId,
+    date: startOfYesterday,
+    totalKWh,
+    totalDeduction,
+    totalEG: totalEB,
+    totalDG
+  });
 
   console.log(`✅ Summary saved for meter ${meterId}---->`,totalDG,totalEB,totalDeduction,totalKWh);
   return true;
