@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 connectDB();
-scheduleMidnightJob();
+// scheduleMidnightJob();
 
 app.use('/api/v1', mainRoutes);
 

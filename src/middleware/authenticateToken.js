@@ -17,10 +17,16 @@ function authenticateToken(req, res, next) {
     }
 
     console.log('Checking token...');
-    const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
-    req.user = decoded;
-    next();
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      if (err) {
+        if (err.name === "TokenExpiredError") {
+          return res.status(401).json({ message: "Token expired" });
+        }
+        return res.status(401).json({ message: "Invalid token" });
+      }
+      req.user = decoded;
+      next();
+    });
   } catch (err) {
     console.error('Token verification failed:', err.message);
     res.status(403).json({ message: 'Invalid or expired token' });
