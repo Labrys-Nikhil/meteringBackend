@@ -23,6 +23,7 @@ const actionSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  
   status: {
     type: String,
     enum: ["pending", "completed", "failed"],

@@ -23,11 +23,14 @@ router.get("/get-user/:id", userController.getUserById);
 router.get("/users", userController.getUsers);
 
 //adminDahboardRoute
+router.get("/adminDashboard/get-tempered-meters/:adminId", adminController.getMeterIssuesByAdmin);
 router.get("/adminDashboard/recent-data/:adminId", adminController.getLatestDashboardStat);
 router.get("/adminDashboard/get-admin-daily-consumption/:adminId", adminController.fetchAdminDailyConsumption);
 router.get("/adminDashboard/get-userdata-by-admin/:adminId", adminController.getUserDataByAdminId);
 router.get("/adminDashboard/get-meter-by-admin/:adminId", adminController.getMeterDataByAdminId);
 router.post("/adminDashboard/add-admin-stats", adminController.addAdminDashboardStats);
+
+router.get("/adminDashboard/get-latest-offline-online-faulty/:adminId", adminController.getLatestOfflineOnlineFaulty);
 
 //payment
 router.get("/get-payment-history-by/:meterId", paymentController.getPaymentsForMeterId)

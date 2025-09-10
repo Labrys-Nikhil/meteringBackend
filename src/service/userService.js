@@ -114,6 +114,6 @@ exports.getUsers = async ({ superAdminId, adminId, search }) => {
     //console.log("=====user======", query)
 
     let user = await User.find(query).select("-password");
-    console.log("=====user======", query, user)
+    // console.log("=====user======", query, user)
     return user
 };

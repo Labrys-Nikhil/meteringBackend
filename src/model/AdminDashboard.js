@@ -1,4 +1,5 @@
-// // model/AdminDashboardStats.js
+
+
 // const mongoose = require("mongoose");
 
 // const adminDashboardStatsSchema = new mongoose.Schema({
@@ -11,13 +12,25 @@
 //   totalFaultyMeters: { type: Number, default: 0 },
 //   totalRevenue: { type: Number, default: 0 },
 //   negativeRevenue: { type: Number, default: 0 },
+//   totalDueUser:{type:Number, default:0},
 //   totalConsumption: { type: Number, default: 0 },
-//   totalPowerFactor: { type: Number, default: 0 },
+//   totalOfflineMeters: { type: Number, default: 0 },
+//   totalEbConsumption: { type: Number, default: 0 },
+//   totalDgConsumption: { type: Number, default: 0 },
 
 //   updatedAt: { type: Date, default: Date.now }
-// });
+// },{timestamps: true});
 
 // module.exports = mongoose.model("AdminDashboard", adminDashboardStatsSchema);
+
+
+
+
+
+
+
+
+
 
 const mongoose = require("mongoose");
 
@@ -29,15 +42,20 @@ const adminDashboardStatsSchema = new mongoose.Schema({
   totalMeters: { type: Number, default: 0 },
   totalActiveMeters: { type: Number, default: 0 },
   totalFaultyMeters: { type: Number, default: 0 },
+  faultyMeters: [{ type: mongoose.Schema.Types.ObjectId, ref: "Meter" }], // ✅ Add this
+  onlineMeters: [{ type: mongoose.Schema.Types.ObjectId, ref: "Meter" }], // ✅ Add this
+  offlineMeters: [{ type: mongoose.Schema.Types.ObjectId, ref: "Meter" }], // ✅ Add this
   totalRevenue: { type: Number, default: 0 },
   negativeRevenue: { type: Number, default: 0 },
-  totalDueUser:{type:Number, default:0},
+  totalDueUser: { type: Number, default: 0 },
   totalConsumption: { type: Number, default: 0 },
   totalOfflineMeters: { type: Number, default: 0 },
   totalEbConsumption: { type: Number, default: 0 },
   totalDgConsumption: { type: Number, default: 0 },
+  costDgPerUnit: { type: Number, default: 0 },
+  costEbPerUnit: { type: Number, default: 0 },
 
   updatedAt: { type: Date, default: Date.now }
-},{timestamps: true});
+}, { timestamps: true });
 
 module.exports = mongoose.model("AdminDashboard", adminDashboardStatsSchema);

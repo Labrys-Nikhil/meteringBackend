@@ -1,30 +1,30 @@
 const adminService = require("../service/adminDashboardService");
 
 
-const getLatestDashboardStat = async (req, res) => {
-    try {
-        const { adminId } = req.params;
+// const getLatestDashboardStat = async (req, res) => {
+//     try {
+//         const { adminId } = req.params;
 
-        if (!adminId) {
-            return res.status(400).json({ success: false, message: "adminId is required" });
-        }
+//         if (!adminId) {
+//             return res.status(400).json({ success: false, message: "adminId is required" });
+//         }
 
-        const data = await adminService.getLatestAdminDashboardStat(adminId);
+//         const data = await adminService.getLatestAdminDashboardStat(adminId);
 
-        if (!data) {
-            return res.status(404).json({ success: false, message: "No dashboard data found" });
-        }
+//         if (!data) {
+//             return res.status(404).json({ success: false, message: "No dashboard data found" });
+//         }
 
-        return res.json({
-            success: true,
-            data,
-            message: "Latest admin dashboard stat fetched successfully",
-        });
-    } catch (error) {
-        console.error("Error fetching admin dashboard stat:", error);
-        return res.status(500).json({ success: false, message: "Internal server error" });
-    }
-};
+//         return res.json({
+//             success: true,
+//             data,
+//             message: "Latest admin dashboard stat fetched successfully",
+//         });
+//     } catch (error) {
+//         console.error("Error fetching admin dashboard stat:", error);
+//         return res.status(500).json({ success: false, message: "Internal server error" });
+//     }
+// };
 
 
 const fetchAdminDailyConsumption = async (req, res) => {
@@ -81,11 +81,104 @@ const addAdminDashboardStats = async (req, res) => {
   }
 };
 
+const getMeterIssuesByAdmin = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+    const meterIssues = await adminService.getMeterIssuesByAdmin(adminId);
+
+    res.status(200).json({
+      success: true,
+      data: meterIssues,
+      message: "Meter Issues By Admin successfully",
+    });
+  } catch (error) {
+    console.error("Error fetching meter issues:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
+
+
+const getLatestDashboardStat = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+    const { page = 1, limit = 10 } = req.query; // pagination from query params
+
+    if (!adminId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "adminId is required" });
+    }
+
+    const data = await adminService.getLatestAdminDashboardStat(
+      adminId,
+      Number(page),
+      Number(limit)
+    );
+
+    if (!data) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No dashboard data found" });
+    }
+
+    return res.json({
+      success: true,
+      data,
+      message: "Latest admin dashboard stat fetched successfully",
+    });
+  } catch (error) {
+    console.error("Error fetching admin dashboard stat:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
+const getLatestOfflineOnlineFaulty = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+    const { page = 1, limit = 10 } = req.query; // pagination from query params
+
+    if (!adminId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "adminId is required" });
+    }
+
+    const data = await adminService.getLatestOfflineOnlineFaultyMeter(
+      adminId,
+      Number(page),
+      Number(limit)
+    );
+
+    if (!data) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No dashboard data found" });
+    }
+
+    return res.json({
+      success: true,
+      data,
+      message: "Latest admin dashboard stat fetched successfully",
+    });
+  } catch (error) {
+    console.error("Error fetching admin dashboard stat:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+};
+
 
 module.exports = {
     getLatestDashboardStat,
     fetchAdminDailyConsumption,
     getUserDataByAdminId,
     getMeterDataByAdminId,
-    addAdminDashboardStats
+    addAdminDashboardStats,
+    getMeterIssuesByAdmin,
+    getLatestOfflineOnlineFaulty
+
+    // getMetersWithIssuesLast5Days
 };

@@ -1,25 +1,39 @@
-const Meter = require('../model/Meter');
-const User = require('../model/User');
-const MeterDecodedData = require('../model/MeterData');
-const { meterReadingValidator } = require('../validator/meterDataValidator');
-const meterDataService = require('../service/meterDataService');
-const axios = require('axios');
-const generateTokenFromIOT = require('../utils/jwtGeneratorIOT');
-const { dailyDataCollectionPerMeter } = require('../helper/DailyDataCollectionJOB');
-const DailyMeterSummary = require('../model/DailyMeterSummary');
-const status = require('statuses');
-
+const Meter = require("../model/Meter");
+const User = require("../model/User");
+const MeterDecodedData = require("../model/MeterData");
+const { meterReadingValidator } = require("../validator/meterDataValidator");
+const meterDataService = require("../service/meterDataService");
+const axios = require("axios");
+const generateTokenFromIOT = require("../utils/jwtGeneratorIOT");
+const {
+  dailyDataCollectionPerMeter,
+} = require("../helper/DailyDataCollectionJOB");
+const DailyMeterSummary = require("../model/DailyMeterSummary");
+const status = require("statuses");
+const { sendNotification } = require("../service/notificationService");
+// const { sendNotification } = require("./src/service/notificationService");
 //smartlynk-apis
 const saveMeterReading = async (req, res) => {
   try {
     // Step 1: Validate incoming data
     const validatedReading = meterReadingValidator.parse(req.body);
     console.log("Validated reading data:", validatedReading);
-    console.log("Validated reading data:", validatedReading.meter_serial_number.value, validatedReading.slave_id.value);
+    console.log(
+      "Validated reading data:",
+      validatedReading.meter_serial_number.value,
+      validatedReading.slave_id.value
+    );
     // Step 2: Check if the meter is registered
-    const meter = await Meter.findOne({ meterSerialNumber: validatedReading.meter_serial_number.value, slaveId: validatedReading.slave_id.value });
+    const meter = await Meter.findOne({
+      meterSerialNumber: validatedReading.meter_serial_number.value,
+      slaveId: validatedReading.slave_id.value,
+    });
     if (!meter) {
-      return res.status(404).json({ error: "Please register the meter in the Metering solution first." });
+      return res
+        .status(404)
+        .json({
+          error: "Please register the meter in the Metering solution first.",
+        });
     }
 
     // Step 3: Attach meterId from the found meter
@@ -28,8 +42,23 @@ const saveMeterReading = async (req, res) => {
     // Create reading instance using `new`
     const reading = new MeterDecodedData(validatedReading);
 
+
     // Save it to the DB
     await reading.save();
+   
+    // Step 4: Send notification after saving
+    try {
+    const meterId = meter._id;
+    //  Trigger alert & notifications
+    await sendNotification({
+      meterId: meterId,
+      data: validatedReading,
+    });
+
+    } catch (notifyErr) {
+      console.error("Failed to send notification:", notifyErr);
+      // Decide: Either continue or return error depending 
+    }
 
     return res.status(201).json({
       message: "Meter reading saved successfully",
@@ -56,7 +85,10 @@ const getMeterDatafromSmartlynk = async (req, res) => {
     const jwtToken = generateTokenFromIOT(superAdmin.email);
     console.log(jwtToken);
 
-    console.log("➡️ Calling SmartLynk URL:", `${process.env.SMARTLYNK_BASE_URL}/get-meterData`);
+    console.log(
+      "➡️ Calling SmartLynk URL:",
+      `${process.env.SMARTLYNK_BASE_URL}/get-meterData`
+    );
 
     const response = await axios.get(
       `${process.env.SMARTLYNK_BASE_URL}/get-meterData`,
@@ -68,7 +100,9 @@ const getMeterDatafromSmartlynk = async (req, res) => {
     );
 
     if (response.status === 200) {
-      return res.status(200).json({ message: "success", data: response.data.data });
+      return res
+        .status(200)
+        .json({ message: "success", data: response.data.data });
     }
     return res.status(500).json({ message: "server error" });
   } catch (error) {
@@ -88,11 +122,12 @@ const getAllMetersDataByUserID = async (req, res) => {
     }
 
     const response = await meterDataService.getMeterDataByUserId(id, user);
-
   } catch (error) {
-    return res.status(500).json({ messsage: "server error", error: `${error}` })
+    return res
+      .status(500)
+      .json({ messsage: "server error", error: `${error}` });
   }
-}
+};
 
 const sendDownlink = async (req, res) => {
   try {
@@ -127,7 +162,8 @@ const sendDownlink = async (req, res) => {
       value: payload.value,
     };
     const response = await axios.post(
-      `${process.env.SMARTLYNK_BASE_URL}/custom-meter-commands`, payloadForDownlink,
+      `${process.env.SMARTLYNK_BASE_URL}/custom-meter-commands`,
+      payloadForDownlink,
       {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
@@ -136,29 +172,35 @@ const sendDownlink = async (req, res) => {
     );
     if (response.status === 200) {
       const actionHistoryEntry = {
-        status: 'success',
+        status: "success",
         action: `Command: ${payload.commandType.toUpperCase()}`,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       // 4. Add the action to meter's history
       meter.actionHistory.push(actionHistoryEntry);
       await meter.save();
       console.log("Downlink command sent successfully:", response.data);
-      return res.status(200).json({ message: "downlink sent sucessfully", data: response.data });
+      return res
+        .status(200)
+        .json({ message: "downlink sent sucessfully", data: response.data });
     } else {
       const actionHistoryEntry = {
-        status: 'failed',
+        status: "failed",
         action: `Command: ${payload.commandType.toUpperCase()}`,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
       // 4. Add the action to meter's history
       meter.actionHistory.push(actionHistoryEntry);
       await meter.save();
       console.error("Failed to send downlink command:", response.data);
-      return res.status(500).json({ message: "Failed to send downlink command", error: response.data });
+      return res
+        .status(500)
+        .json({
+          message: "Failed to send downlink command",
+          error: response.data,
+        });
     }
-
   } catch (error) {
     console.error("Failed to send downlink to SmartLynk:", error.message);
     throw error;
@@ -168,12 +210,12 @@ const sendDownlink = async (req, res) => {
 //testing the cronjob function
 const testCron = async (req, res) => {
   try {
-    console.log('inside the testcorn function');
+    console.log("inside the testcorn function");
     const data = await dailyDataCollectionPerMeter();
     console.log(data);
-    res.status(200).send('Job executed successfully!');
+    res.status(200).send("Job executed successfully!");
   } catch (err) {
-    res.status(500).send('Job execution failed');
+    res.status(500).send("Job execution failed");
   }
 };
 const getMeterDataDaily = async (req, res) => {
@@ -183,62 +225,172 @@ const getMeterDataDaily = async (req, res) => {
     if (!meter) {
       return res.status(404).json({ message: "No meter found for the user." });
     }
-    const meterData = await MeterDecodedData.find({ meterId: meter._id, createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 1)) } });
+    const meterData = await MeterDecodedData.find({
+      meterId: meter._id,
+      createdAt: {
+        $gte: new Date(new Date().setDate(new Date().getDate() - 1)),
+      },
+    });
     if (!meterData || meterData.length === 0) {
-      return res.status(404).json({ message: "No meter data found for the last 24 hours." });
+      return res
+        .status(404)
+        .json({ message: "No meter data found for the last 24 hours." });
     }
     return res.status(200).json(meterData);
   } catch (error) {
     console.error("Error fetching daily meter data:", error);
-    return res.status(500).json({ message: "Server error while fetching daily meter data." });
+    return res
+      .status(500)
+      .json({ message: "Server error while fetching daily meter data." });
   }
 };
+
+// const getMeterData30Days = async (req, res) => {
+//   try {
+//     const userId = req.user.id;
+
+//     console.log("User ID:", userId);
+
+//     if (!userId) {
+//       return res.status(400).json({ message: "User ID is required." });
+//     }
+//     //find the meter using the userId
+//     const meter = await Meter.findOne({ assignedUserId: userId });
+//     console.log("Meter:", meter);
+//     if (!meter) {
+//       return res.status(404).json({ message: "No meter found for the user." });
+//     }
+//     const now = new Date();
+//     const startDate = new Date();
+//     startDate.setDate(now.getDate() - 31);
+//     startDate.setHours(0, 0, 0, 0); // Start of the day
+
+//     const endDate = new Date();
+//     endDate.setDate(now.getDate() - 1);
+//     endDate.setHours(23, 59, 59, 999); // End of the day
+//     console.log("Start Date:", startDate);
+//     console.log("End Date:", endDate);
+//     console.log(meter._id);
+//     const meterData = await DailyMeterSummary.find({
+//       meterId: meter._id,
+//       date: {
+//         $gte: startDate,
+//         $lte: endDate,
+//       },
+//     });
+//     console.log("Meter Data:", meterData);
+//     if (!meterData || meterData.length === 0) {
+//       return res
+//         .status(404)
+//         .json({ message: "No meter data found for the last 30 days." });
+//     }
+//     return res.status(200).json(meterData);
+//   } catch (error) {
+//     console.error("Error fetching 30 days meter data:", error);
+//     return res
+//       .status(500)
+//       .json({ message: "Server error while fetching 30 days meter data." });
+//   }
+// };
+
 
 
 const getMeterData30Days = async (req, res) => {
   try {
-
     const userId = req.user.id;
-
-    console.log("User ID:", userId);
 
     if (!userId) {
       return res.status(400).json({ message: "User ID is required." });
     }
-    //find the meter using the userId
+
+    // Find the meter using the userId
     const meter = await Meter.findOne({ assignedUserId: userId });
-    console.log("Meter:", meter);
     if (!meter) {
       return res.status(404).json({ message: "No meter found for the user." });
     }
+
     const now = new Date();
     const startDate = new Date();
     startDate.setDate(now.getDate() - 31);
-    startDate.setHours(0, 0, 0, 0); // Start of the day
+    startDate.setHours(0, 0, 0, 0);
 
     const endDate = new Date();
     endDate.setDate(now.getDate() - 1);
-    endDate.setHours(23, 59, 59, 999); // End of the day
-    console.log("Start Date:", startDate);
-    console.log("End Date:", endDate);
-    console.log(meter._id);
-    const meterData = await DailyMeterSummary.find({
+    endDate.setHours(23, 59, 59, 999);
+
+// const meterData = await DailyMeterSummary.aggregate([
+//   {
+//     $match: {
+//       meterId: meter._id,
+//       date: { $gte: startDate, $lte: endDate },
+//     },
+//   },
+//   { $sort: { date: -1, createdAt: -1, _id: -1 } }, // ensure latest first
+//   {
+//     $group: {
+//       _id: {
+//         $dateToString: { format: "%Y-%m-%d", date: "$date" }, // normalize to YYYY-MM-DD
+//       },
+//       latestRecord: { $first: "$$ROOT" }, // take latest of that day
+//     },
+//   },
+//   { $replaceRoot: { newRoot: "$latestRecord" } },
+//   { $sort: { date: 1 } }, // ascending order for frontend
+// ]);
+
+
+
+
+const meterData = await DailyMeterSummary.aggregate([
+  {
+    $match: {
       meterId: meter._id,
-      date: {
-        $gte: startDate,
-        $lte: endDate
-      }
-    });
-    console.log("Meter Data:", meterData);
+      date: { $gte: startDate, $lte: endDate },
+    },
+  },
+  { $sort: { date: -1, createdAt: -1, _id: -1 } }, // ensure latest first
+  {
+    $group: {
+      _id: {
+        $dateTrunc: {
+          date: "$date",
+          unit: "day",
+          timezone: "Asia/Kolkata", // ✅ set to your local timezone
+        },
+      },
+      latestRecord: { $first: "$$ROOT" },
+    },
+  },
+  { $replaceRoot: { newRoot: "$latestRecord" } },
+  { $sort: { date: -1 } },
+]);
+
+
+
+
     if (!meterData || meterData.length === 0) {
-      return res.status(404).json({ message: "No meter data found for the last 30 days." });
+      return res.status(404).json({
+        message: "No meter data found for the last 30 days.",
+      });
     }
+
     return res.status(200).json(meterData);
   } catch (error) {
     console.error("Error fetching 30 days meter data:", error);
-    return res.status(500).json({ message: "Server error while fetching 30 days meter data." });
+    return res
+      .status(500)
+      .json({ message: "Server error while fetching 30 days meter data." });
   }
 };
 
 
-module.exports = { saveMeterReading, getAllMetersDataByUserID, getMeterDatafromSmartlynk, sendDownlink, testCron, getMeterDataDaily, getMeterData30Days };
+
+module.exports = {
+  saveMeterReading,
+  getAllMetersDataByUserID,
+  getMeterDatafromSmartlynk,
+  sendDownlink,
+  testCron,
+  getMeterDataDaily,
+  getMeterData30Days,
+};

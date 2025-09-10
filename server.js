@@ -3,8 +3,8 @@ const cors = require('cors');
 const { connectDB } = require('./src/config/dbConfig');
 const mainRoutes = require('./src/routes/index');
 const { scheduleMidnightJob } = require('./src/jobs/scheduleMidnightJob');
-
-
+const mongoose=require("mongoose")
+const { sendNotification } = require("./src/service/notificationService");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -13,12 +13,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 connectDB();
-// scheduleMidnightJob();
+scheduleMidnightJob();
 
 app.use('/api/v1', mainRoutes);
 
 
+
+
 // Start the server
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

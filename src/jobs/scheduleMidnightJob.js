@@ -1,5 +1,6 @@
 const cron = require('node-cron');
-const {dailyDataCollectionPerMeter} = require('../helper/DailyDataCollectionJOB');
+const { dailyDataCollectionPerMeter } = require('../helper/DailyDataCollectionJOB');
+const { addAdminDashboardStat } = require('../service/adminDashboardService');
 
 
 const scheduleMidnightJob = () => {
@@ -7,6 +8,10 @@ const scheduleMidnightJob = () => {
   cron.schedule('0 0 * * *', () => {
     dailyDataCollectionPerMeter();
   });
+
+  cron.schedule('0 * * * *', () => {
+    addAdminDashboardStat();
+  });
 };
 
-module.exports = {scheduleMidnightJob};
+module.exports = { scheduleMidnightJob };
